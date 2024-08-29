@@ -14,7 +14,8 @@ class FolderController extends Controller
      */
     public function index()
     {
-        $data = Folder::with('subFolders', 'files')->get();
+        $user_id = auth()->user()->id;
+        $data = Folder::with('subFolders', 'files')->where('user_id', $user_id)->get();
         return response()->json([
             "status" => "success",
             "data" => $data,

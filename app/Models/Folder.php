@@ -18,7 +18,7 @@ class Folder extends Model
 
     public function subFolders()
     {
-        return $this->subFolder()->with('subFolders');
+        return $this->subFolder()->with('subFolders', 'files');
     }
 
     public function files()
