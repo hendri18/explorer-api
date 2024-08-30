@@ -25,7 +25,7 @@ class FileController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'folder_id' => 'required|exists:App\Models\User,id',
+            'folder_id' => 'required|exists:App\Models\Folder,id',
         ]);
 
         if ($validator->fails()) {
@@ -52,7 +52,6 @@ class FileController extends Controller
             $file->file_name = $request_file->getClientOriginalName();
             $file->path = $file_path;
             $file->size = $request_file->getSize();
-            $file->save();
 
             $file->save();
             DB::commit();
@@ -83,7 +82,36 @@ class FileController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'file_name' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "status" => "error",
+                "message" => $validator->errors(),
+            ], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            $file = ModelFile::findOrFail($id);
+            $file->file_name = $request->file_name;
+            $file->save();
+
+            DB::commit();
+        } catch (\Exception $e) {
+            return response()->json([
+                "status" => "error",
+                "meessage" => $e->getMessage()
+            ], 500);
+            DB::rollback();
+        }
+        
+        return response()->json([
+            "status" => "success",
+            "data" => $file,
+        ]);
     }
 
     /**

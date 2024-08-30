@@ -40,11 +40,32 @@ class FolderController extends Controller
 
         DB::beginTransaction();
         try {
+            $user_id = auth()->user()->id;
+
             $folder = new Folder;
-            $folder->name = $request->name;
-            $folder->user_id = auth()->user()->id;
-            if ($request->parent_id)
+            $findDuplicate = Folder::query();
+            $findDuplicate->where('name', $request->name);
+            $findDuplicate->where('user_id', $user_id);
+
+            $folder->user_id = $user_id;
+            if ($request->parent_id) {
                 $folder->parent_id = $request->parent_id;
+                $findDuplicate->where('parent_id', $request->parent_id);
+            } else {
+                $findDuplicate->whereNull('parent_id');
+            }
+
+            $result = $findDuplicate->first();
+            if (!empty($result)) {
+                // $folder->name = $request->name . ' - ' . time();
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Folder name cannot be duplicate",
+                ], 400);
+            }
+            
+            $folder->name = $request->name;
+
             $folder->save();
             DB::commit();
         } catch (\Exception $e) {
@@ -91,7 +112,28 @@ class FolderController extends Controller
 
         DB::beginTransaction();
         try {
+            $user_id = auth()->user()->id;
             $folder = Folder::findOrFail($id);
+
+            $findDuplicate = Folder::query();
+            $findDuplicate->where('name', $request->name);
+            $findDuplicate->where('user_id', $user_id);
+
+            if ($folder->parent_id) {
+                $findDuplicate->where('parent_id', $folder->parent_id);
+            } else {
+                $findDuplicate->whereNull('parent_id');
+            }
+
+            $result = $findDuplicate->first();
+            if (!empty($result)) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Folder name cannot be duplicate",
+                ], 400);
+            }
+
+            
             $folder->name = $request->name;
             $folder->save();
             DB::commit();

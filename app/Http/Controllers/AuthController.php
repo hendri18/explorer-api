@@ -37,6 +37,7 @@ class AuthController extends Controller
             'status' => 'success',
             'data' => [
                 'id' => $user->id,
+                'name' => $user->name,
                 'email' => $user->email,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
@@ -61,6 +62,7 @@ class AuthController extends Controller
             'status' => 'success',
             'data' => [
                 'id' => $user->id,
+                'name' => $user->name,
                 'email' => $user->email,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
